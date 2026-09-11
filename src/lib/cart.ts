@@ -2,6 +2,7 @@ import "server-only";
 import { randomBytes } from "crypto";
 import { cookies } from "next/headers";
 import { connectDB } from "./db";
+import { isSecureCookie } from "./cookie-flags";
 import { Cart, type ICart } from "@/models/Cart";
 import { getSession } from "./auth";
 
@@ -59,7 +60,7 @@ export async function getOrCreateCart(): Promise<ICart> {
   const created = await Cart.create({ token });
   store.set(CART_COOKIE, token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    secure: isSecureCookie(),
     sameSite: "lax",
     path: "/",
     maxAge: CART_MAX_AGE,

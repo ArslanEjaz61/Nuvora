@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
 import { connectDB } from "./db";
+import { isSecureCookie } from "./cookie-flags";
 import { User, type IUser, type UserRole } from "@/models/User";
 
 const SESSION_COOKIE = "nuvora_session";
@@ -41,7 +42,7 @@ export async function createSession(payload: SessionPayload) {
   const store = await cookies();
   store.set(SESSION_COOKIE, token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    secure: isSecureCookie(),
     sameSite: "lax",
     path: "/",
     maxAge: SESSION_MAX_AGE,
