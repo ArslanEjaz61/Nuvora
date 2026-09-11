@@ -7,6 +7,7 @@ const SESSION_COOKIE = "nuvora_session";
 // so the token is verified here with jose directly rather than reused from there.
 function getSecret() {
   const secret = process.env.AUTH_SECRET;
+  console.error("[middleware] AUTH_SECRET present:", Boolean(secret), "len:", secret?.length ?? 0);
   if (!secret || secret.length < 32) return null;
   return new TextEncoder().encode(secret);
 }
@@ -19,7 +20,8 @@ async function readRole(req: NextRequest): Promise<string | null> {
   try {
     const { payload } = await jwtVerify(token, secret, { algorithms: ["HS256"] });
     return typeof payload.role === "string" ? payload.role : null;
-  } catch {
+  } catch (err) {
+    console.error("[middleware] jwtVerify failed:", err instanceof Error ? err.message : err);
     return null;
   }
 }
