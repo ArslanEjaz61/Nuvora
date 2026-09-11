@@ -43,6 +43,7 @@ next-env.d.ts
 
 # local dev database (mongodb-memory-server)
 /.mongo-data/
+/.db-export/
 
 # raw source photos — already uploaded to Cloudinary, not needed in the repo
 /website image product/
