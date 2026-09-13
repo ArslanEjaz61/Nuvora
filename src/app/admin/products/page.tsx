@@ -44,7 +44,7 @@ export default async function AdminProductsPage({
 
   const [items, total, collections] = await Promise.all([
     Product.find(filter)
-      .sort({ updatedAt: -1 })
+      .sort({ title: 1 })
       .skip((page - 1) * PER_PAGE)
       .limit(PER_PAGE)
       .lean(),

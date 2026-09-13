@@ -8,7 +8,7 @@ import { ProductVariant } from "@/models/ProductVariant";
 import { Wishlist } from "@/models/Wishlist";
 import { Review } from "@/models/Review";
 import { productInputSchema } from "@/lib/validation";
-import { readJson, parseWith, jsonError, serverError } from "@/app/api/_lib/http";
+import { readJson, parseWith, onlyProvided, jsonError, serverError } from "@/app/api/_lib/http";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -48,9 +48,10 @@ export async function PATCH(req: Request, { params }: Ctx) {
   const { id } = await params;
   if (badId(id)) return jsonError("Not found", 404);
 
-  const parsed = parseWith(productInputSchema.partial(), await readJson(req));
+  const rawBody = await readJson(req);
+  const parsed = parseWith(productInputSchema.partial(), rawBody);
   if (!parsed.ok) return parsed.response;
-  const input = parsed.data;
+  const input = onlyProvided(rawBody, parsed.data);
 
   try {
     await connectDB();

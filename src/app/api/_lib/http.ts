@@ -61,6 +61,28 @@ export function parseWith<T>(schema: ZodType<T>, payload: unknown): ParseResult<
   }
 }
 
+/**
+ * Zod's `.default()` fires even on a `.partial()` schema when a key is
+ * missing from the input — so a PATCH that only sends `{ status }` against a
+ * schema with `images: z.array(...).default([])` comes back out of `.parse()`
+ * as `{ status, images: [], collections: [], ... }`, and blindly spreading
+ * that into a Mongo `$set` wipes every field the caller never touched.
+ *
+ * This keeps only the keys the client actually sent, so partial updates stay
+ * partial.
+ */
+export function onlyProvided<T extends Record<string, unknown>>(
+  raw: unknown,
+  parsed: T
+): Partial<T> {
+  if (!raw || typeof raw !== "object") return {};
+  const provided: Partial<T> = {};
+  for (const key of Object.keys(raw as Record<string, unknown>)) {
+    if (key in parsed) provided[key as keyof T] = parsed[key as keyof T];
+  }
+  return provided;
+}
+
 export function pageParams(url: URL, defaultLimit = 12, maxLimit = 50) {
   const rawPage = Number(url.searchParams.get("page") ?? 1);
   const rawLimit = Number(url.searchParams.get("limit") ?? defaultLimit);
